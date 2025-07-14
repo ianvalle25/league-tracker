@@ -6,7 +6,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-RIOT_API_KEY = ""
+RIOT_API_KEY = "RGAPI-7fde02e5-9826-46fd-a1ce-e48c98bb01f4"
 
 
 @app.route("/summoner/<game_name>/<tag_line>")
@@ -76,3 +76,34 @@ def get_summoner_from_post():
         return get_summoner_info(game_name=game_name, tag_line=tag_line)
       except Exception as e:
         return jsonify({"error": str(e)}), 500
+      
+@app.route("/match-history", methods=["POST"])
+def get_match_history():
+    try:
+        data = request.get_json()
+        riot_id = data.get("riotId")
+        if not riot_id or "#" not in riot_id:
+            return jsonify({"error": "Invalid Riot ID"}), 400
+
+        game_name, tag_line = riot_id.split("#")
+        headers = {"X-Riot-Token": RIOT_API_KEY}
+
+        account_url = f"https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{game_name}/{tag_line}"
+        account_res = requests.get(account_url, headers=headers)
+        puuid = account_res.json()["puuid"]
+
+        match_url = f"https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids"
+        match_id_res = requests.get(match_url, headers=headers, params={"start": 0, "count": 5})
+        match_ids = match_id_res.json()
+
+        match_data = []
+
+        for match_id in match_ids:
+            detail_url = f"https://americas.api.riotgames.com/lol/match/v5/matches/{match_id}"
+            detail_res = requests.get(detail_url, headers=headers)
+            match_data.append(detail_res.json())
+        
+        return jsonify(match_data)
+        
+    except:
+         return jsonify({"error": str(e)}), 500
