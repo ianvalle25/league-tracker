@@ -82,28 +82,79 @@ def get_match_history():
     try:
         data = request.get_json()
         riot_id = data.get("riotId")
+
         if not riot_id or "#" not in riot_id:
             return jsonify({"error": "Invalid Riot ID"}), 400
 
         game_name, tag_line = riot_id.split("#")
         headers = {"X-Riot-Token": RIOT_API_KEY}
 
+        # Get user's puuid
         account_url = f"https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{game_name}/{tag_line}"
         account_res = requests.get(account_url, headers=headers)
+        if account_res.status_code != 200:
+            return jsonify({"error": "Account not found"}), 404
+
         puuid = account_res.json()["puuid"]
 
+        # Get Match IDs
         match_url = f"https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids"
         match_id_res = requests.get(match_url, headers=headers, params={"start": 0, "count": 5})
         match_ids = match_id_res.json()
 
+        # Get match data
         match_data = []
 
         for match_id in match_ids:
             detail_url = f"https://americas.api.riotgames.com/lol/match/v5/matches/{match_id}"
             detail_res = requests.get(detail_url, headers=headers)
-            match_data.append(detail_res.json())
-        
+            match = detail_res.json()
+            #List to put players in their sides
+            blue = []
+            red = []
+            player_data = None
+            queueType = ""
+            if match["info"]["queueId"] == 420:
+                queueType = "Ranked Solo/Duo"
+            elif match["info"]["queueId"] == 440:
+                queueType = "Ranked Flex 5v5"
+
+            # Find the participant data for this puuid
+            for participant in match["info"]["participants"]:
+                    player_info = {
+                        "summonerName": participant["summonerName"],
+                        "championName": participant["championName"],
+                        "teamId" : participant["teamId"],
+                        "kills": participant["kills"],
+                        "deaths": participant["deaths"],
+                        "assists": participant["assists"],
+                        "win": participant["win"],
+                        "gameMode": match["info"]["gameMode"],
+                        "gameDuration": match["info"]["gameDuration"]
+                    }
+                    #Sets players into their sides
+                    if participant["teamId"] == 100:
+                     blue.append(player_info)
+                    else:
+                     red.append(player_info)
+
+                    if participant["puuid"] == puuid:
+                     player_data = player_info
+            #Grab global variables for match state
+            match_summary = {
+                "gameMode": match["info"]["gameMode"],
+                "gameDuration": match["info"]["gameDuration"],
+                "player": player_data,
+                "queueType" : queueType,
+                "blueTeam": blue,
+                "redTeam": red
+            }
+            #Set summary to matcha_data
+            match_data.append(match_summary)
+                    
+
+
         return jsonify(match_data)
-        
-    except:
-         return jsonify({"error": str(e)}), 500
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

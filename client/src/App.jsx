@@ -56,12 +56,54 @@ function App() {
           </div>
         )}
 
-        {matchData.length > 0 && (
-          <div className="mt-10 text-left w-full max-w-2xl">
-            <h2 className="text-2xl font-semibold mb-2">Match History</h2>
-            <pre className="bg-[#5C5470] p-4 rounded">{JSON.stringify(matchData, null, 2)}</pre>
+{matchData.length > 0 && (
+  <div className="mt-10 space-y-8 max-w-4xl w-full">
+    {matchData.map((match, index) => (
+      <div key={index} className="bg-[#5C5470] p-4 rounded shadow">
+        <h2 className="text-xl font-semibold mb-2">Match {index + 1} - {match.gameMode}</h2>
+        <h2 className="text-xl font-semibold mb-2">{match.queueType}</h2>
+        <p className="mb-2">Duration: {Math.floor(match.gameDuration / 60)}m {match.gameDuration % 60}s</p>
+
+        {/* Player Summary */}
+        <div className="mb-4">
+          <h3 className="text-lg font-bold">Your Performance</h3>
+          <p>
+            <strong>{match.player.summonerName}</strong> played <strong>{match.player.championName}</strong> | 
+            K/D/A: {match.player.kills}/{match.player.deaths}/{match.player.assists} | 
+            Result: {match.player.win ? "Victory" : "Defeat"}
+          </p>
+        </div>
+
+        {/* Teams */}
+        <div className="grid grid-cols-2 gap-6">
+          {/* Blue Team */}
+          <div>
+            <h4 className="font-semibold text-blue-300 mb-1">Blue Team</h4>
+            <ul className="space-y-1">
+              {match.blueTeam.map((player, i) => (
+                <li key={i}>
+                  {player.summonerName} ({player.championName}) - {player.kills}/{player.deaths}/{player.assists}
+                </li>
+              ))}
+            </ul>
           </div>
-        )}
+
+          {/* Red Team */}
+          <div>
+            <h4 className="font-semibold text-red-300 mb-1">Red Team</h4>
+            <ul className="space-y-1">
+              {match.redTeam.map((player, i) => (
+                <li key={i}>
+                  {player.summonerName} ({player.championName}) - {player.kills}/{player.deaths}/{player.assists}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+)}
       </div>
     </div>
   );
