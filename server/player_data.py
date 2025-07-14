@@ -167,3 +167,16 @@ def get_match_history():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@app.route("/match-timeline", methods = "POST")
+def get_match_timeline():
+    try:
+        data = request.get_json()
+        match_id = data.get("matchId")
+        url = "https://americas.api.riotgames.com/lol/match/v5/matches/{match_Id}/timeline"
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
