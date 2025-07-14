@@ -78,7 +78,7 @@ function App() {
         <div className="grid grid-cols-2 gap-6">
           {/* Blue Team */}
           <div>
-            <h4 className="font-semibold text-blue-300 mb-1">Blue Team</h4>
+            <h4 className="font-semibold text-blue-300 mb-1">Blue Team {match.killsBlue}</h4>
             <ul className="space-y-1">
               {match.blueTeam.map((player, i) => (
                 <li key={i}>
@@ -90,7 +90,7 @@ function App() {
 
           {/* Red Team */}
           <div>
-            <h4 className="font-semibold text-red-300 mb-1">Red Team</h4>
+            <h4 className="font-semibold text-red-300 mb-1">Red Team {match.killsRed}</h4>
             <ul className="space-y-1">
               {match.redTeam.map((player, i) => (
                 <li key={i}>

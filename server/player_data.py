@@ -112,12 +112,16 @@ def get_match_history():
             #List to put players in their sides
             blue = []
             red = []
+            total_blue = 0
+            total_red = 0
             player_data = None
             queueType = ""
             if match["info"]["queueId"] == 420:
                 queueType = "Ranked Solo/Duo"
             elif match["info"]["queueId"] == 440:
                 queueType = "Ranked Flex 5v5"
+            else:
+                queueType = "Normal"
 
             # Find the participant data for this puuid
             for participant in match["info"]["participants"]:
@@ -135,11 +139,14 @@ def get_match_history():
                     #Sets players into their sides
                     if participant["teamId"] == 100:
                      blue.append(player_info)
+                     total_blue += participant["kills"]
                     else:
                      red.append(player_info)
+                     total_red += participant["kills"]
 
                     if participant["puuid"] == puuid:
                      player_data = player_info
+
             #Grab global variables for match state
             match_summary = {
                 "gameMode": match["info"]["gameMode"],
@@ -147,7 +154,9 @@ def get_match_history():
                 "player": player_data,
                 "queueType" : queueType,
                 "blueTeam": blue,
-                "redTeam": red
+                "redTeam": red,
+                "killsRed": total_red,
+                "killsBlue": total_blue
             }
             #Set summary to matcha_data
             match_data.append(match_summary)
