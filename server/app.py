@@ -6,7 +6,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-RIOT_API_KEY = "RGAPI-7fde02e5-9826-46fd-a1ce-e48c98bb01f4"
+RIOT_API_KEY = "RGAPI-b7fff99e-f3f6-4ec0-9616-ee8baab9e4d3"
 
 
 @app.route("/summoner/<game_name>/<tag_line>")
@@ -168,15 +168,39 @@ def get_match_history():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-@app.route("/match-timeline", methods = "POST")
+    
+@app.route("/match-timeline", methods=["POST"])
 def get_match_timeline():
     try:
         data = request.get_json()
         match_id = data.get("matchId")
-        url = "https://americas.api.riotgames.com/lol/match/v5/matches/{match_Id}/timeline"
+        if not match_id:
+            return jsonify({"error": "Missing matchId"}), 400
+
+        headers = {"X-Riot-Token": RIOT_API_KEY}
+        url = f"https://americas.api.riotgames.com/lol/match/v5/matches/{match_id}/timeline"
+        res = requests.get(url, headers=headers)
+
+        if res.status_code != 200:
+            return jsonify({"error": "Failed to fetch timeline", "status": res.status_code}), res.status_code
+
+        timeline_data = res.json()
+        return jsonify(timeline_data)
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@app.route("/champ-rotation", methods=["POST"])
+def get_champ_rotation():
+    try:
+        headers = {"X-Riot-Token": RIOT_API_KEY}
+        champ_url = f"https://na1.api.riotgames.com/lol/platform/v3/champion-rotations"
+        champ_res = requests.get(champ_url, headers=headers)
+        champ_data = champ_res.json()
+        
+        return jsonify(champ_data)
 
-
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 
