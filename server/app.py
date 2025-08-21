@@ -6,7 +6,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-RIOT_API_KEY = "RGAPI-b7fff99e-f3f6-4ec0-9616-ee8baab9e4d3"
+RIOT_API_KEY = "RGAPI-e8657eb8-7f26-4352-8714-f14716d067ee"
 
 
 @app.route("/summoner/<game_name>/<tag_line>")
@@ -194,7 +194,7 @@ def get_match_timeline():
 def get_champ_rotation():
     try:
         headers = {"X-Riot-Token": RIOT_API_KEY}
-        champ_url = f"https://na1.api.riotgames.com/lol/platform/v3/champion-rotations"
+        champ_url = "https://na1.api.riotgames.com/lol/platform/v3/champion-rotations"
         champ_res = requests.get(champ_url, headers=headers)
         champ_data = champ_res.json()
         
